@@ -1,0 +1,148 @@
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+<style type="text/css">
+  .droppable {
+    background: #08c;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+  }
+  .droppable.dragover {
+    background: #00CC71;
+  }
+  .view-gen {
+    background: #08c;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
+  }
+</style>
+</head>
+
+<body>
+
+저화질 이미지
+<div class="droppable" id="drop_zone">
+  <p>파일을 여기로 드래그하거나 클릭하여 이미지를 업로드하세요.</p>
+</div>
+<div class="output"></div>
+<br>
+
+<input type="button" id="btn_gen" onclick="btn_gen_click();" value="generate" style="padding: 5px;"/>
+<br><br><br>
+
+<div id="result">
+  생성한 고화질 이미지
+  <div class="view-gen" id="gen_image">
+    <p>여기에 생성한 고화질 이미지가 표시됩니다.</p>
+  </div>
+  <br>
+  <form method='POST' action='download_gen'>
+    <input type='submit' value="download" style="padding: 5px;"/>
+  </form>
+</div>
+
+</body>
+
+<script type="text/javascript">
+  
+  var dropped_files = [];
+
+  function btn_gen_click() {
+    if (dropped_files.length == 0) {
+      alert('이미지를 먼저 선택해주세요.')
+      return;
+    }
+
+    // 파일 업로드 및 이미지 생성 등 서버 작업 중에 표시되는 로딩 이미지
+    var div_result = document.getElementById('result')
+    div_result.innerHTML = '이미지 생성 중입니다...'
+    div_result.innerHTML += '<div class="view-gen" id="gen_image"><img id="img_result" width="200" src="/_loading.gif" /></div><br>'
+
+    var form_data = new FormData();
+    form_data.append('file', dropped_files[0]);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'upload_low', true);
+    xhr.send(form_data);
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == 4 && xhr.status == 200) {
+          file_name = xhr.responseText
+          div_result.innerHTML = ''
+          div_result.innerHTML += '생성한 고화질 이미지'
+          div_result.innerHTML += '<div class="view-gen" id="gen_image"><img id="img_result" width="400" src="' + '/' + file_name + '" /></div><br>'
+          div_result.innerHTML += '<form method="POST" action="download_gen/' + file_name + '"><input type="submit" value="download" style="padding: 5px;"/></form>'
+      }
+    }
+  }
+
+  (function(window) {
+    function triggerCallback(e, callback) {
+      if(!callback || typeof callback !== 'function') {
+        return;
+      }
+      var files;
+      if(e.dataTransfer) {
+        files = e.dataTransfer.files;
+      } else if(e.target) {
+        files = e.target.files;
+      }
+      callback.call(null, files);
+    }
+    function makeDroppable(ele, callback) {
+      var input = document.createElement('input');
+      input.setAttribute('type', 'file');
+      input.removeAttribute('multiple')
+      input.style.display = 'none';
+      input.addEventListener('change', function(e) {
+        triggerCallback(e, callback);
+      });
+      ele.appendChild(input);
+      
+      ele.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        ele.classList.add('dragover');
+      });
+
+      ele.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        ele.classList.remove('dragover');
+      });
+
+      ele.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        ele.classList.remove('dragover');
+        triggerCallback(e, callback);
+      });
+      
+      ele.addEventListener('click', function() {
+        input.value = null;
+        input.click();
+      });
+    }
+    window.makeDroppable = makeDroppable;
+  })(this);
+  (function(window) {
+    makeDroppable(window.document.querySelector('.droppable'), function(files) {
+      console.log(files);
+      var output = document.querySelector('.output');
+      output.innerHTML = '';
+      dropped_files = [];
+      for(var i=0; i<1; i++) {
+        if(files[i].type.indexOf('image/') === 0) {
+          dropped_files.push(files[i]);
+          document.getElementById('drop_zone').innerHTML = ''
+          document.getElementById('drop_zone').innerHTML += '<img id="img_preview" width="400" src="' + URL.createObjectURL(files[i]) + '" />';
+        }
+      }
+    });
+  })(this);
+  
+</script>
+
+</html>

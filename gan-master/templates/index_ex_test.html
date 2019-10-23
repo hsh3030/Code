@@ -1,0 +1,97 @@
+<html>
+<head>
+    <title></title>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</head>
+<body>
+
+이미지 입력
+<div id="drop_zone" style="width:300px; height:300px; text-align:center; vertical-align:middle; border:1px dotted gray; padding=0px;">여기에 이미지를 드래그 하세요.</div>
+<output id="list"></output>
+</br>
+예상 이미지
+<div id="gen_zone" style="width:300px; height:300px; text-align:center; vertical-align:middle; border:1px dotted gray; padding=0px;">여기에 새 이미지가 표시됩니다.</div>
+<output id="gen_list"></output>
+
+</body>
+<script>
+    function handleFileSelectWindow(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        alert('click...')
+    }
+
+    function handleFileSelect(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        var files = evt.dataTransfer.files; // FileList object.
+
+        // files is a FileList of File objects. List some properties.
+        var output = [];
+        for (var i = 0, f; f = files[i]; i++) {
+            output.push('<li><strong>', escape(f.name), '</strong></li>');
+            //output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+            //            f.size, ' bytes, last modified: ',
+            //            f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+            //            '</li>');
+        }
+        document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+
+        for (var i=0, file; file=files[i]; i++) {
+            if (file.type.match(/image.*/)) {
+                var reader = new FileReader();
+
+                reader.onload = function(e2) {
+                    // finished reading file data.
+                    var img = document.createElement('img');
+
+                    img.onload = function() {
+                        // image is loaded; sizes are available
+                        if (img.width > 300 || img.height > 300) {
+                            // alert(img.width + ' ' + img.height)
+                            if (img.width > img.height) {
+                                img.width = 300
+                            } else {
+                                img.height = 300
+                            }
+                        } else {
+                            if (img.width > img.height) {
+                                img.width = 300
+                            } else {
+                                img.height = 300
+                            }
+                        }
+                    };
+
+                    img.src = e2.target.result;
+                    // document.body.appendChild(img);
+                    document.getElementById('drop_zone').innerHTML = ''
+                    document.getElementById('drop_zone').appendChild(img)
+                }
+
+                reader.readAsDataURL(file); // start reading the file data.
+            }
+        }
+    }
+
+    function handleDragOver(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+        evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+    }
+
+    // Setup the dnd listeners.
+    var dropZone = document.getElementById('drop_zone');
+    dropZone.addEventListener('dragover', handleDragOver, false);
+    dropZone.addEventListener('drop', handleFileSelect, false);
+    dropZone.addEventListener('click', handleFileSelectWindow, false);
+
+</script>
+</html>

@@ -102,7 +102,7 @@ model = CatBoostRegressor(loss_function="RMSE",
                            l2_leaf_reg=5,
                            random_seed=42,
                            od_type="Iter",
-                           depth=7,
+                           depth=5,
                            early_stopping_rounds=3000,
                            border_count=32
                           )
