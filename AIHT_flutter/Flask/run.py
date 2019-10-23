@@ -12,7 +12,6 @@ from utils_model import VGG_LOSS
 from keras.models import load_model
 from keras import backend as K
 
-
 app = Flask(__name__, static_url_path = "", static_folder = "_generate_image")
 model = False
 
